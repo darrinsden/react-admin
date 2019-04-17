@@ -1,28 +1,65 @@
-import React, { Children } from 'react';
+import React, { SFC, Children, ReactElement, ComponentType } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { withStyles, createStyles } from '@material-ui/core/styles';
-import { ReferenceFieldController } from 'ra-core';
+import {
+    withStyles,
+    createStyles,
+    Theme,
+    WithStyles,
+} from '@material-ui/core/styles';
+import { ReferenceFieldController, Identifier } from 'ra-core';
 
 import LinearProgress from '../layout/LinearProgress';
 import Link from '../Link';
 import sanitizeRestProps from './sanitizeRestProps';
+import { FieldProps, InjectedFieldProps, fieldPropTypes } from './types';
 
-const styles = theme => createStyles({
-    link: {
-        color: theme.palette.primary.main,
-    },
-});
+const styles = (theme: Theme) =>
+    createStyles({
+        link: {
+            color: theme.palette.primary.main,
+        },
+    });
+
+interface ChildProps {
+    className: string;
+    resource: string;
+    id: Identifier;
+    record?: any;
+    allowEmpty: boolean;
+    basePath: string;
+    translateChoice: boolean;
+}
+
+interface Props extends FieldProps {
+    allowEmpty: boolean;
+    children: ReactElement<ChildProps>;
+    reference: string;
+    source: string;
+    translateChoice: boolean;
+    linkType: string | boolean;
+}
+
+interface InjectedProps extends InjectedFieldProps {
+    data?: any;
+    id: Identifier;
+    isLoading?: boolean;
+    resourceLinkPath?: string;
+    resource: string;
+    referenceRecord: any;
+}
 
 // useful to prevent click bubbling in a datagrid with rowClick
 const stopPropagation = e => e.stopPropagation();
 
-export const ReferenceFieldView = ({
+export const ReferenceFieldView: SFC<
+    Props & InjectedProps & WithStyles<typeof styles>
+> = ({
     allowEmpty,
     basePath,
     children,
     className,
-    classes = {},
+    classes,
     isLoading,
     record,
     reference,
@@ -44,9 +81,9 @@ export const ReferenceFieldView = ({
                 className={className}
                 onClick={stopPropagation}
             >
-                {React.cloneElement(Children.only(children), {
+                {React.cloneElement<ChildProps>(Children.only(children), {
                     className: classnames(
-                        children.props.className,
+                        Children.only(children).props.className,
                         classes.link // force color override for Typography components
                     ),
                     record: referenceRecord,
@@ -68,22 +105,6 @@ export const ReferenceFieldView = ({
         translateChoice,
         ...sanitizeRestProps(rest),
     });
-};
-
-ReferenceFieldView.propTypes = {
-    allowEmpty: PropTypes.bool,
-    basePath: PropTypes.string,
-    children: PropTypes.element,
-    className: PropTypes.string,
-    classes: PropTypes.object,
-    isLoading: PropTypes.bool,
-    record: PropTypes.object,
-    reference: PropTypes.string,
-    referenceRecord: PropTypes.object,
-    resource: PropTypes.string,
-    resourceLinkPath: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    source: PropTypes.string,
-    translateChoice: PropTypes.bool,
 };
 
 /**
@@ -115,7 +136,9 @@ ReferenceFieldView.propTypes = {
  *     <TextField source="name" />
  * </ReferenceField>
  */
-const ReferenceField = ({ children, ...props }) => {
+const ReferenceField: SFC<
+    Props & InjectedProps & WithStyles<typeof styles>
+> = ({ children, ...props }) => {
     if (React.Children.count(children) !== 1) {
         throw new Error('<ReferenceField> only accepts a single child');
     }
@@ -132,37 +155,24 @@ const ReferenceField = ({ children, ...props }) => {
     );
 };
 
-ReferenceField.propTypes = {
-    addLabel: PropTypes.bool,
-    allowEmpty: PropTypes.bool.isRequired,
-    basePath: PropTypes.string.isRequired,
-    children: PropTypes.element.isRequired,
-    classes: PropTypes.object,
-    className: PropTypes.string,
-    cellClassName: PropTypes.string,
-    headerClassName: PropTypes.string,
-    label: PropTypes.string,
-    record: PropTypes.object,
-    reference: PropTypes.string.isRequired,
-    resource: PropTypes.string,
-    sortBy: PropTypes.string,
-    source: PropTypes.string.isRequired,
-    translateChoice: PropTypes.func,
-    linkType: PropTypes.oneOfType([PropTypes.string, PropTypes.bool])
-        .isRequired,
-};
-
-ReferenceField.defaultProps = {
-    allowEmpty: false,
-    classes: {},
-    linkType: 'edit',
-    record: {},
-};
-
-const EnhancedReferenceField = withStyles(styles)(ReferenceField);
+const EnhancedReferenceField = withStyles(styles)(
+    ReferenceField
+) as ComponentType<Props>;
 
 EnhancedReferenceField.defaultProps = {
     addLabel: true,
+    allowEmpty: false,
+    linkType: 'edit',
+};
+
+EnhancedReferenceField.propTypes = {
+    ...fieldPropTypes,
+    allowEmpty: PropTypes.bool.isRequired,
+    children: PropTypes.element.isRequired,
+    reference: PropTypes.string.isRequired,
+    translateChoice: PropTypes.bool,
+    linkType: PropTypes.oneOfType([PropTypes.string, PropTypes.bool])
+        .isRequired,
 };
 
 export default EnhancedReferenceField;
