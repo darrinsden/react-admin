@@ -1,4 +1,4 @@
-import React, { Children, SFC, ComponentType } from 'react';
+import React, { Children, SFC, ComponentType, ReactElement } from 'react';
 import PropTypes from 'prop-types';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
@@ -8,6 +8,7 @@ import {
     crudGetManyAccumulate as crudGetManyAccumulateAction,
     Identifier,
     Dispatch,
+    Sort,
 } from 'ra-core';
 import { FieldProps, fieldPropTypes, InjectedFieldProps } from './types';
 
@@ -15,7 +16,18 @@ const styles = createStyles({
     progress: { marginTop: '1em' },
 });
 
+interface ChildProps {
+    className: string;
+    resource: string;
+    ids: Identifier[];
+    data?: any;
+    loadedOnce?: boolean;
+    basePath: string;
+    currentSort?: Sort;
+}
+
 interface Props extends FieldProps {
+    children: ReactElement<ChildProps>;
     reference: string;
     source: string;
 }
@@ -46,14 +58,13 @@ export const ReferenceArrayFieldView: SFC<
         return <LinearProgress className={classes.progress} />;
     }
 
-    return React.cloneElement(Children.only(children), {
+    return React.cloneElement<ChildProps>(Children.only(children), {
         className,
         resource: reference,
         ids,
         data,
         loadedOnce,
         basePath: referenceBasePath,
-        currentSort: {},
     });
 };
 
@@ -121,6 +132,7 @@ EnhancedReferenceArrayField.defaultProps = {
 EnhancedReferenceArrayField.propTypes = {
     ...fieldPropTypes,
     reference: PropTypes.string,
+    children: PropTypes.element.isRequired,
 };
 
 export default EnhancedReferenceArrayField;
