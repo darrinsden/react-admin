@@ -1,4 +1,4 @@
-import React, { Children, SFC } from 'react';
+import React, { Children, SFC, ComponentType } from 'react';
 import PropTypes from 'prop-types';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
@@ -6,26 +6,34 @@ import { withStyles, createStyles, WithStyles } from '@material-ui/core/styles';
 import {
     ReferenceArrayFieldController,
     crudGetManyAccumulate as crudGetManyAccumulateAction,
+    Identifier,
+    Dispatch,
 } from 'ra-core';
-import { types as coreTypes } from 'ra-core';
-import { FieldProps } from './types';
+import { FieldProps, fieldPropTypes } from './types';
 
 const styles = createStyles({
     progress: { marginTop: '1em' },
 });
 
-interface ViewProps extends FieldProps, WithStyles<typeof styles> {
-    ids: coreTypes.Identifier[];
+interface Props extends FieldProps {
     reference: string;
-    referenceBasePath?: string;
-    loadedOnce?: boolean;
-    data?: any;
-    crudGetManyAccumulate: coreTypes.Dispatch<
-        typeof crudGetManyAccumulateAction
-    >;
+    source: string;
 }
 
-export const ReferenceArrayFieldView: SFC<ViewProps> = ({
+interface InjectedProps {
+    basePath: string;
+    crudGetManyAccumulate: Dispatch<typeof crudGetManyAccumulateAction>;
+    data?: any;
+    id: Identifier;
+    ids: Identifier[];
+    loadedOnce?: boolean;
+    referenceBasePath?: string;
+    resource: string;
+}
+
+export const ReferenceArrayFieldView: SFC<
+    Props & InjectedProps & WithStyles<typeof styles>
+> = ({
     children,
     className,
     classes,
@@ -82,22 +90,9 @@ export const ReferenceArrayFieldView: SFC<ViewProps> = ({
  * </ReferenceArrayField>
  *
  */
-
-interface Props extends FieldProps, WithStyles<typeof styles> {
-    ids: coreTypes.Identifier[];
-    resource: string;
-    reference: string;
-    referenceBasePath?: string;
-    loadedOnce?: boolean;
-    data?: any;
-    crudGetManyAccumulate: coreTypes.Dispatch<
-        typeof crudGetManyAccumulateAction
-    >;
-    source: string;
-    basePath: string;
-    id: coreTypes.Identifier;
-}
-export const ReferenceArrayField: SFC<Props> = ({ children, ...props }) => {
+export const ReferenceArrayField: SFC<
+    Props & InjectedProps & WithStyles<typeof styles>
+> = ({ children, ...props }) => {
     if (React.Children.count(children) !== 1) {
         throw new Error(
             '<ReferenceArrayField> only accepts a single child (like <Datagrid>)'
@@ -116,10 +111,17 @@ export const ReferenceArrayField: SFC<Props> = ({ children, ...props }) => {
     );
 };
 
-const EnhancedReferenceArrayField = withStyles(styles)(ReferenceArrayField);
+const EnhancedReferenceArrayField = withStyles(styles)(
+    ReferenceArrayField
+) as ComponentType<Props>;
 
 EnhancedReferenceArrayField.defaultProps = {
     addLabel: true,
+};
+
+EnhancedReferenceArrayField.propTypes = {
+    ...fieldPropTypes,
+    reference: PropTypes.string,
 };
 
 export default EnhancedReferenceArrayField;
