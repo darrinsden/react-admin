@@ -16,7 +16,7 @@ export interface FieldProps {
 
 // Props injected by react-admin
 export interface InjectedFieldProps {
-    basePath?: string;
+    basePath: string;
     record?: Record;
 }
 

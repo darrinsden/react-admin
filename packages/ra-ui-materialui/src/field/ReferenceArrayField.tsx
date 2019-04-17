@@ -9,7 +9,7 @@ import {
     Identifier,
     Dispatch,
 } from 'ra-core';
-import { FieldProps, fieldPropTypes } from './types';
+import { FieldProps, fieldPropTypes, InjectedFieldProps } from './types';
 
 const styles = createStyles({
     progress: { marginTop: '1em' },
@@ -20,8 +20,7 @@ interface Props extends FieldProps {
     source: string;
 }
 
-interface InjectedProps {
-    basePath: string;
+interface InjectedProps extends InjectedFieldProps {
     crudGetManyAccumulate: Dispatch<typeof crudGetManyAccumulateAction>;
     data?: any;
     id: Identifier;
