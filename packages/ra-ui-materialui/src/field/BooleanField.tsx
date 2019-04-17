@@ -4,12 +4,12 @@ import get from 'lodash/get';
 import pure from 'recompose/pure';
 import FalseIcon from '@material-ui/icons/Clear';
 import TrueIcon from '@material-ui/icons/Done';
-import Typography from '@material-ui/core/Typography';
+import Typography, { TypographyProps } from '@material-ui/core/Typography';
 import { createStyles, withStyles, WithStyles } from '@material-ui/core/styles';
 import compose from 'recompose/compose';
-import { translate as withTranslate } from 'ra-core';
+import { translate as withTranslate, TranslationContextProps } from 'ra-core';
 
-import { FieldProps } from './types';
+import { FieldProps, InjectedFieldProps, fieldPropTypes } from './types';
 import sanitizeRestProps from './sanitizeRestProps';
 
 const styles = createStyles({
@@ -32,12 +32,18 @@ const styles = createStyles({
     },
 });
 
-interface Props extends FieldProps, WithStyles<typeof styles> {
+interface Props extends FieldProps {
     valueLabelTrue?: string;
     valueLabelFalse?: string;
 }
 
-export const BooleanField: SFC<Props> = ({
+interface EnhancedProps
+    extends TranslationContextProps,
+        WithStyles<typeof styles> {}
+
+export const BooleanField: SFC<
+    Props & InjectedFieldProps & EnhancedProps & TypographyProps
+> = ({
     className,
     classes,
     source,
@@ -65,7 +71,9 @@ export const BooleanField: SFC<Props> = ({
                 className={className}
                 {...sanitizeRestProps(rest)}
             >
-                <span className={classes.label}>{ariaLabel}</span>
+                <span className={classes.label}>
+                    {translate(ariaLabel, { _: ariaLabel })}
+                </span>
                 <FalseIcon />
             </Typography>
         );
@@ -95,14 +103,24 @@ export const BooleanField: SFC<Props> = ({
     );
 };
 
-const PureBooleanField = compose(
+const EnhancedBooleanField = compose<
+    Props & InjectedFieldProps & EnhancedProps & TypographyProps,
+    Props & TypographyProps
+>(
     pure,
     withStyles(styles),
     withTranslate
 )(BooleanField);
 
-PureBooleanField.defaultProps = {
+EnhancedBooleanField.defaultProps = {
     addLabel: true,
 };
 
-export default PureBooleanField;
+EnhancedBooleanField.propTypes = {
+    ...Typography.propTypes,
+    ...fieldPropTypes,
+    valueLabelFalse: PropTypes.string,
+    valueLabelTrue: PropTypes.string,
+};
+
+export default EnhancedBooleanField;

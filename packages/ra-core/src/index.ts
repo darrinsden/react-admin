@@ -7,7 +7,6 @@ import CoreAdminRouter from './CoreAdminRouter';
 import createAdminStore from './createAdminStore';
 import RoutesWithLayout from './RoutesWithLayout';
 import Resource from './Resource';
-import * as types from './types';
 
 export {
     createAppReducer,
@@ -36,7 +35,6 @@ export {
     getPossibleReferences,
     getPossibleReferenceValues,
 } from './reducer';
-export { types };
 
 export {
     getIds,
